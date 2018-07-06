@@ -1,0 +1,105 @@
+<% include ./layout %>
+
+    <body>
+       <p class="display-4 text-center text-muted">Universal Currency Converter</p>
+        <form method="GET" action="/currencyConverter">
+            <div class="container">
+                    <div class="row">
+                    <div class="col-lg-3 form-group">
+                        <input type="text" id="amount" name="amount" class="form-control" class="text-muted" placeholder="Input amount">
+                    </div>
+
+                    <div class="col-lg-3 form-group">
+                        <select class="form-control" name="fromCurrency" id="fromCurrency">
+                        </select>
+                    </div>
+
+                    <div class="text-center col-lg-1 form-group">
+                        <span style="font-size:2rem;">=</span>
+                    </div>
+
+                    <div class="col-lg-3 form-group">
+                        <select class="form-control" name="toCurrency" id="toCurrency">
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-3 form-group">
+                        <button type="submit" class="btn btn-primary">Convert</button>
+                        <span class="text-muted" style="font-size:1.5rem;display:inline-block;padding-left:1.8rem;font-weight:bold;" id="finalValue"></span>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+        <div class="container" style="margin-top:5rem;">
+        <div class="row d-flex justify-content-center">
+         <footer class="align-self-center">
+            <p style="font-size:1.5rem;" class="text-muted">Purple Fluke&reg; <span id="year"></span></p>
+        </footer>
+        </div>
+        </div>
+    </body>
+    </html>
+
+
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+        if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/index.js').then(reg => console.log("service worker successfully registered!", reg)
+        ).catch(err => console.log('Error while trying to register service worker', err)
+        );
+    }
+        var currency = [];
+        var fromCurrency = document.getElementById('fromCurrency');
+        var toCurrency = document.getElementById('toCurrency');
+        var finalValue = document.getElementById('finalValue');
+        fetch('https://free.currencyconverterapi.com/api/v5/currencies').then((response) => {
+            return response;
+        }).then((value) => {
+            console.log('Retrned Value');
+            return value.json();
+        }).then((vl) => {
+            console.log('Second Then');
+            for (var value in vl.results) {
+                currency.push(value);
+            }
+            var option = currency.map((elem) => {
+                return `<option value='${elem}'>${elem}</option>`;
+            }).join();
+            fromCurrency.insertAdjacentHTML('afterbegin', option);
+            toCurrency.insertAdjacentHTML('afterbegin', option);
+        }).catch((error) => {
+            // alert(error);
+            console.log('You are offline at the moment Please turn your data on!')
+        });
+
+        var button = document.querySelector('[type="submit"]');
+        var amount = document.querySelector('#amount');
+
+
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log(fromCurrency.value);
+            console.log(toCurrency.value);
+            console.log(amount.value);
+
+            // var result = {};
+            fetch(`/currencyConverter?from=${fromCurrency.value}&to=${toCurrency.value}&amount=${amount.value}`)
+                .then((response) => {
+                    return response.json();
+                }).then((value) => {
+                    console.log('value');
+                    console.log(value);
+                    finalValue.textContent = value;
+                }).catch((error) => {
+                    finalValue.textContent = error;
+                });
+
+
+        });
+    </script>
+    <!-- <script src="/javascripts/sw.js"></script> -->
+    </body>
+
+    </html>
